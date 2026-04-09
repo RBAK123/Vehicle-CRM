@@ -217,3 +217,19 @@ h1,h2,h3 { font-weight: 600; }
   white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ─── BACKUP BAR ────────────────────────────────────────────────────────── */
+.backup-bar {
+  display: flex; gap: 8px; margin-bottom: 10px;
+}
+.backup-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 500;
+  background: var(--secondary); color: var(--muted-fg);
+  border: 1px solid var(--border);
+  transition: background 0.15s, color 0.15s;
+}
+.backup-btn:active { background: var(--border); }
+.backup-btn svg { flex-shrink: 0; }
+.header-btn-group { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
