@@ -60,6 +60,53 @@ function showToast(msg) {
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2000);
 }
 
+// ─── EXPORT / IMPORT ────────────────────────────────────────────────────────
+
+function exportData() {
+  getAllCustomers().then(customers => {
+    if (customers.length === 0) { showToast('⚠️ 沒有資料可匯出'); return; }
+    const payload = { version: 1, exportDate: new Date().toISOString(), customers };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const d = new Date();
+    a.href = url;
+    a.download = `CRM_backup_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast(`✓ 已匯出 ${customers.length} 筆客戶資料`);
+  });
+}
+
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      const customers = data.customers || data;
+      if (!Array.isArray(customers) || customers.length === 0) { showToast('⚠️ 檔案內無有效資料'); return; }
+      if (!confirm(`確定匯入 ${customers.length} 筆客戶資料？\n（現有資料將會保留，重複紀錄需自行處理）`)) return;
+      for (const c of customers) {
+        const copy = { ...c };
+        delete copy.id;
+        await addCustomer(copy);
+      }
+      await loadAndRender();
+      showToast(`✓ 已匯入 ${customers.length} 筆客戶資料`);
+    } catch (err) {
+      showToast('⚠️ 檔案格式不正確');
+    }
+  };
+  input.click();
+}
+
 // ─── VIEWS ───────────────────────────────────────────────────────────────────
 
 function renderList() {
@@ -84,7 +131,17 @@ function renderList() {
   const htitle = div('header-title');
   htitle.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="22" height="13" rx="2"/><path d="M16 16l2 5H6l2-5"/></svg><span>客戶跟進</span>`;
   const addBtn = btn('btn btn-primary btn-sm', '+ 新增客戶', () => setState({ view: 'form', editing: null }));
-  htop.append(htitle, addBtn);
+  const btnGroup = div('header-btn-group');
+  btnGroup.appendChild(addBtn);
+  htop.append(htitle, btnGroup);
+
+  // Backup bar
+  const backupBar = div('backup-bar');
+  const exportBtn = btn('backup-btn', '', exportData);
+  exportBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>匯出備份</span>`;
+  const importBtn = btn('backup-btn', '', importData);
+  importBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>匯入還原</span>`;
+  backupBar.append(exportBtn, importBtn);
 
   // Search
   const searchWrap = div('search-wrap');
@@ -101,7 +158,7 @@ function renderList() {
     filters.appendChild(fb);
   });
 
-  hdr.append(htop, searchWrap, filters);
+  hdr.append(htop, backupBar, searchWrap, filters);
   root.appendChild(hdr);
 
   // Body
