@@ -218,18 +218,23 @@ h1,h2,h3 { font-weight: 600; }
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* ─── BACKUP BAR ────────────────────────────────────────────────────────── */
-.backup-bar {
-  display: flex; gap: 8px; margin-bottom: 10px;
-}
-.backup-btn {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 6px 12px; border-radius: var(--radius-sm);
-  font-size: 12px; font-weight: 500;
-  background: var(--secondary); color: var(--muted-fg);
-  border: 1px solid var(--border);
-  transition: background 0.15s, color 0.15s;
-}
-.backup-btn:active { background: var(--border); }
-.backup-btn svg { flex-shrink: 0; }
-.header-btn-group { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+/* ─── TOGGLE SWITCH ──────────────────────────────────────────────────────── */
+.toggle-wrap { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--border); }
+.toggle-label { font-size: 14px; font-weight: 500; color: var(--text); }
+.toggle-track { position: relative; width: 48px; height: 28px; border-radius: 999px; background: var(--border); transition: background 0.2s; flex-shrink: 0; cursor: pointer; }
+.toggle-track.on { background: var(--primary); }
+.toggle-input { position: absolute; opacity: 0; width: 0; height: 0; }
+.toggle-thumb { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.2); transition: transform 0.2s; pointer-events: none; }
+.toggle-track.on .toggle-thumb { transform: translateX(20px); }
+
+/* ─── CONDITIONAL BLOCK ──────────────────────────────────────────────────── */
+.conditional-block { background: var(--bg); border-radius: var(--radius-sm); padding: 12px; margin-top: 4px; border: 1px solid var(--border); }
+.conditional-block .field { margin-bottom: 10px; }
+.conditional-block .field:last-child { margin-bottom: 0; }
+.conditional-block .toggle-wrap { border-top: none; padding-top: 4px; }
+
+/* ─── RADIO GROUP ────────────────────────────────────────────────────────── */
+.radio-group { display: flex; gap: 12px; padding: 4px 0; }
+.radio-row { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.radio-row input[type="radio"] { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+.radio-label { font-size: 14px; cursor: pointer; }
