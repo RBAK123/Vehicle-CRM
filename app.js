@@ -310,8 +310,8 @@ function renderForm() {
   selfInsDetail.id = 'self-ins-detail';
   selfInsDetail.style.display = (c?.insuranceType === '公司保險') ? 'none' : '';
   selfInsDetail.append(
-    fieldEl('保險公司', false, makeSelectEl('f-ins-company', INSURANCE_COS, c?.insuranceCompany, '選擇保險公司')),
-    fieldEl('NCD', false, makeSelectEl('f-ncd', NCD_OPTIONS, c?.ncd, '選擇NCD'))
+    fieldEl('保險公司', false, textInput('f-ins-company', '輸入保險公司名稱...', c?.insuranceCompany)),
+    fieldEl('NCD', false, textInput('f-ncd', '例如：30%、50%...', c?.ncd))
   );
   insSec.appendChild(selfInsDetail);
 
