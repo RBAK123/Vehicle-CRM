@@ -67,6 +67,53 @@ function showToast(msg) {
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2000);
 }
 
+
+// ─── LIST BODY PARTIAL RE-RENDER (keeps search focused) ──────────────────────
+
+function renderListBody() {
+  const container = document.getElementById('list-body');
+  if (!container) return;
+  const { customers, search, filterBrand, filterStatus } = state;
+  const filtered = customers.filter(c => {
+    const q = search.toLowerCase();
+    const ms = !search || c.name.toLowerCase().includes(q) || (c.phone||'').includes(q) || c.model.toLowerCase().includes(q);
+    const mb = !filterBrand || c.brand === filterBrand;
+    const mst = !filterStatus || c.status === filterStatus;
+    return ms && mb && mst;
+  });
+  container.innerHTML = '';
+  if (filtered.length === 0) {
+    const empty = div('empty');
+    empty.innerHTML = `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--muted-fg);margin-bottom:1rem"><rect x="1" y="3" width="22" height="13" rx="2"/><path d="M16 16l2 5H6l2-5"/></svg>`;
+    empty.append(el('h3','',customers.length===0?'未有客戶記錄':'無符合條件的客戶'), el('p','empty-sub',customers.length===0?'按「新增客戶」開始建立記錄':'嘗試更改搜尋或篩選條件'));
+    container.appendChild(empty);
+  } else {
+    const list = div('customer-list');
+    filtered.forEach(c => {
+      const card = div('card customer-card');
+      card.onclick = () => setState({ view: 'detail', detail: c });
+      const top = div('card-top');
+      const nameRow = div('name-row');
+      nameRow.append(el('h3','customer-name',c.name), statusBadge(c.status));
+      const meta = div('customer-meta');
+      meta.appendChild(span('model-text',`${c.brand} ${c.model}`));
+      if (c.phone) { const ph=span('phone-text',''); ph.innerHTML=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.23 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>${c.phone}`; meta.appendChild(ph); }
+      top.append(nameRow, meta);
+      if (c.notes) { const n=div('note-preview'); n.innerHTML=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>${c.notes}`; top.appendChild(n); }
+      const actions = div('card-actions');
+      const delBtn = btn('icon-btn','',e=>{e.stopPropagation();if(confirm(`確定刪除「${c.name}」的記錄？`)){deleteCustomer(c.id).then(()=>loadAndRender());}});
+      delBtn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>`;
+      const chev=div('chevron'); chev.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`;
+      actions.append(delBtn, chev);
+      card.append(top, actions);
+      list.appendChild(card);
+    });
+    container.appendChild(list);
+    container.appendChild(el('p','count-label',`共 ${filtered.length} 位客戶`));
+  }
+}
+
+
 // ─── FORM HELPERS ────────────────────────────────────────────────────────────
 
 function makeToggle(id, label, checked) {
@@ -144,7 +191,7 @@ function renderList() {
   const searchIcon = div('search-icon');
   searchIcon.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`;
   const searchInput = input('search-input', { type: 'search', placeholder: '搜尋客戶名稱、電話、型號...', value: search });
-  searchInput.oninput = e => setState({ search: e.target.value });
+  searchInput.oninput = e => { state.search = e.target.value; renderListBody(); };
   searchWrap.append(searchIcon, searchInput);
 
   const filters = div('filters');
@@ -178,36 +225,9 @@ function renderList() {
     body.appendChild(pills);
   }
 
-  if (filtered.length === 0) {
-    const empty = div('empty');
-    empty.innerHTML = `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--muted-fg);margin-bottom:1rem"><rect x="1" y="3" width="22" height="13" rx="2"/><path d="M16 16l2 5H6l2-5"/></svg>`;
-    empty.append(el('h3','',customers.length===0?'未有客戶記錄':'無符合條件的客戶'), el('p','empty-sub',customers.length===0?'按「新增客戶」開始建立記錄':'嘗試更改搜尋或篩選條件'));
-    if (customers.length===0) empty.appendChild(btn('btn btn-primary btn-sm','+ 新增客戶',()=>setState({view:'form',editing:null})));
-    body.appendChild(empty);
-  } else {
-    const list = div('customer-list');
-    filtered.forEach(c => {
-      const card = div('card customer-card');
-      card.onclick = () => setState({ view: 'detail', detail: c });
-      const top = div('card-top');
-      const nameRow = div('name-row');
-      nameRow.append(el('h3','customer-name',c.name), statusBadge(c.status));
-      const meta = div('customer-meta');
-      meta.appendChild(span('model-text',`${c.brand} ${c.model}`));
-      if (c.phone) { const ph=span('phone-text',''); ph.innerHTML=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.23 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>${c.phone}`; meta.appendChild(ph); }
-      top.append(nameRow, meta);
-      if (c.notes) { const n=div('note-preview'); n.innerHTML=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>${c.notes}`; top.appendChild(n); }
-      const actions = div('card-actions');
-      const delBtn = btn('icon-btn','',e=>{e.stopPropagation();if(confirm(`確定刪除「${c.name}」的記錄？`)){deleteCustomer(c.id).then(()=>loadAndRender());}});
-      delBtn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>`;
-      const chev=div('chevron'); chev.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`;
-      actions.append(delBtn, chev);
-      card.append(top, actions);
-      list.appendChild(card);
-    });
-    body.appendChild(list);
-    body.appendChild(el('p','count-label',`共 ${filtered.length} 位客戶`));
-  }
+  const listBody = div('');
+  listBody.id = 'list-body';
+  body.appendChild(listBody);
 
   root.appendChild(body);
   return root;
@@ -643,6 +663,7 @@ function render() {
   else if (state.view === 'detail') view = renderDetail();
   else view = renderList();
   app.appendChild(view);
+  if (state.view === 'list') renderListBody();
   window.scrollTo(0, 0);
 }
 
