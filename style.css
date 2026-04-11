@@ -242,6 +242,19 @@ h1,h2,h3 { font-weight: 600; }
 /* ─── HEADER BUTTONS ─────────────────────────────────────────────────────── */
 .header-btns { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 
+/* ─── BACKUP BAR ────────────────────────────────────────────────────────── */
+.backup-bar { display: flex; gap: 8px; margin-bottom: 10px; }
+.backup-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 500;
+  background: var(--secondary); color: var(--muted-fg);
+  border: 1px solid var(--border);
+  transition: background 0.15s, color 0.15s;
+}
+.backup-btn:active { background: var(--border); }
+.backup-btn svg { flex-shrink: 0; }
+
 /* ─── BATCH INPUT ────────────────────────────────────────────────────────── */
 .batch-info {
   background: #eff6ff;
