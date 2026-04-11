@@ -184,8 +184,11 @@ function renderList() {
   const htop = div('header-top');
   const htitle = div('header-title');
   htitle.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="22" height="13" rx="2"/><path d="M16 16l2 5H6l2-5"/></svg><span>客戶跟進</span>`;
-  const addBtn = btn('btn btn-primary btn-sm', '+ 新增客戶', () => setState({ view: 'form', editing: null }));
-  htop.append(htitle, addBtn);
+  const btnGroup = div('header-btns');
+  const batchBtn = btn('btn btn-secondary btn-sm', '▤ 批量輸入', () => setState({ view: 'batch' }));
+  const addBtn = btn('btn btn-primary btn-sm', '+ 新增', () => setState({ view: 'form', editing: null }));
+  btnGroup.append(batchBtn, addBtn);
+  htop.append(htitle, btnGroup);
 
   const searchWrap = div('search-wrap');
   const searchIcon = div('search-icon');
@@ -653,6 +656,110 @@ function renderDetail() {
   return root;
 }
 
+// ─── BATCH INPUT ────────────────────────────────────────────────────────────
+
+function renderBatch() {
+  let rowCount = 5;
+  const root = div('page');
+
+  const hdr = div('header');
+  const htop = div('header-top');
+  const backBtn = btn('icon-btn-lg', '', () => setState({ view: 'list' }));
+  backBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>`;
+  const title = el('h1', 'page-title', '批量輸入客戶');
+  const saveAllBtn = btn('btn btn-primary btn-sm', '💾 全部儲存', handleBatchSave);
+  htop.append(backBtn, title, saveAllBtn);
+  hdr.appendChild(htop);
+  root.appendChild(hdr);
+
+  const body = div('body form-body');
+
+  // Instructions
+  const info = div('batch-info');
+  info.innerHTML = 'ℹ️ 填客戶名、電話、揀品牌同型號就夠，其他資料之後再編輯補充。空白行會自動跳過。';
+  body.appendChild(info);
+
+  const tableWrap = div('batch-table-wrap');
+  tableWrap.id = 'batch-rows';
+  body.appendChild(tableWrap);
+
+  function addBatchRow(i) {
+    const row = div('batch-row');
+    row.innerHTML = `<div class="batch-num">${i + 1}</div>`;
+    const fields = div('batch-fields');
+
+    const nameInput = textInput(`b-name-${i}`, '客戶名稱 *', '');
+    const phoneInput = textInput(`b-phone-${i}`, '電話', '', 'tel');
+
+    const brandSel = makeSelectEl(`b-brand-${i}`, Object.keys(BRANDS), '', '品牌 *');
+    const modelSel = makeSelectEl(`b-model-${i}`, [], '', '請先揀品牌');
+    modelSel.disabled = true;
+
+    brandSel.onchange = () => {
+      const b = brandSel.value;
+      while (modelSel.options.length) modelSel.remove(0);
+      const def = el('option', '', '選擇型號'); def.value = ''; def.disabled = true; def.selected = true;
+      modelSel.appendChild(def);
+      (BRANDS[b] || []).forEach(m => { const o = el('option', '', m); o.value = m; modelSel.appendChild(o); });
+      modelSel.disabled = false;
+    };
+
+    fields.append(nameInput, phoneInput, brandSel, modelSel);
+    row.appendChild(fields);
+    tableWrap.appendChild(row);
+  }
+  for (let i = 0; i < rowCount; i++) addBatchRow(i);
+
+  // Add more rows button
+  const moreBtn = btn('btn btn-secondary btn-sm batch-more', '+ 加多 5 行', () => {
+    const start = rowCount;
+    rowCount += 5;
+    for (let i = start; i < rowCount; i++) addBatchRow(i);
+  });
+  body.appendChild(moreBtn);
+
+  body.appendChild(div('spacer'));
+  root.appendChild(body);
+
+  async function handleBatchSave() {
+    let saved = 0;
+    for (let i = 0; i < rowCount; i++) {
+      const name = document.getElementById(`b-name-${i}`)?.value?.trim();
+      if (!name) continue;
+      const brand = document.getElementById(`b-brand-${i}`)?.value;
+      const model = document.getElementById(`b-model-${i}`)?.value;
+      if (!brand || !model) {
+        showToast(`❗ 第 ${i + 1} 行請揀品牌同型號`);
+        return;
+      }
+      await addCustomer({
+        name,
+        phone: document.getElementById(`b-phone-${i}`)?.value?.trim() || '',
+        brand, model,
+        status: '未出牌',
+        deposit1: '', deposit2: '', fullPaid: false,
+        hasLoan: false, bankName: '',
+        insuranceType: '自來保險', insuranceCompany: '', ncd: '',
+        hasPackage: false, packagePaid: false,
+        extraTransport: false, transportNotes: '',
+        hasAccessories: false, accessories: '',
+        officeDate: '', transportDate: '', insuranceDate: '', deliveryDate: '',
+        notes: '',
+      });
+      saved++;
+    }
+    if (saved === 0) {
+      showToast('❗ 請至少填寫一位客戶');
+      return;
+    }
+    showToast(`✓ 已新增 ${saved} 位客戶`);
+    await loadAndRender();
+    setState({ view: 'list' });
+  }
+
+  return root;
+}
+
 // ─── RENDER ENGINE ──────────────────────────────────────────────────────────
 
 function render() {
@@ -661,6 +768,7 @@ function render() {
   let view;
   if (state.view === 'form') view = renderForm();
   else if (state.view === 'detail') view = renderDetail();
+  else if (state.view === 'batch') view = renderBatch();
   else view = renderList();
   app.appendChild(view);
   if (state.view === 'list') renderListBody();

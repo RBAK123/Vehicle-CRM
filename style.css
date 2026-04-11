@@ -238,3 +238,55 @@ h1,h2,h3 { font-weight: 600; }
 .radio-row { display: flex; align-items: center; gap: 6px; cursor: pointer; }
 .radio-row input[type="radio"] { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
 .radio-label { font-size: 14px; cursor: pointer; }
+
+/* ─── HEADER BUTTONS ─────────────────────────────────────────────────────── */
+.header-btns { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+/* ─── BATCH INPUT ────────────────────────────────────────────────────────── */
+.batch-info {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.batch-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.batch-row:last-child { border-bottom: none; }
+.batch-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--secondary);
+  color: var(--muted-fg);
+  font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.batch-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.batch-fields .form-input,
+.batch-fields .form-select {
+  height: 40px;
+  font-size: 14px;
+}
+.batch-table-wrap {
+  margin-bottom: 12px;
+}
+.batch-more {
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 16px;
+}
