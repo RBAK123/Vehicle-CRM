@@ -1,4 +1,4 @@
-const CACHE = 'vehicle-crm-v3';
+const CACHE = 'vehicle-crm-v4';
 const ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.json'];
 
 self.addEventListener('install', e => {
