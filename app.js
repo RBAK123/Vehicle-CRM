@@ -1,6 +1,6 @@
 // ─── DATA ───────────────────────────────────────────────────────────────────
 
-const BRANDS = { MG: ['MG4','MG5','MGS5 Advan','MGS5 Trophy','MGS6 Trophy','MGS6 Performance','MGZS Hybrid','MG3 MT','MG3 Hybrid','Cyberster'], GAC: ['Aion UT','Aion Y Premium','Aion V Premium','Aion V Luxury','GAC E9 PHEV','Aion ES'] };
+const BRANDS = { MG: ['MG4','MG4 SE 51kWh','MG4 SE 64kWh','MG4 Urban','MG4 X-Power RS4','MG5','MG5 Trophy','MGS5 Advan','MGS5 Trophy','MGS6 Trophy','MGS6 Performance','MGZS Hybrid','MG3 MT','MG3 Hybrid','Cyberster'], GAC: ['Aion UT','Aion Y Premium','Aion V Premium','Aion V Luxury','GAC E9 PHEV','Aion ES'] };
 const STATUSES = ['未出牌','已上運輸署','待出保險','已出保險','待交車','已交車'];
 const STATUS_COLORS = { '未出牌':'red','已上運輸署':'orange','待出保險':'yellow','已出保險':'blue','待交車':'purple','已交車':'green' };
 const INSURANCE_COS = ['中銀保險','太平保險','安盛保險','保誠保險','恒生保險','友邦保險','蘇黎世保險','其他'];
