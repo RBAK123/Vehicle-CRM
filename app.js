@@ -12,7 +12,7 @@ const NCD_OPTIONS = ['0%','10%','20%','30%','40%','50%','60%'];
 let db;
 function openDB() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open('VehicleCRM', 2); // version 2 for schema update
+    const req = indexedDB.open('VehicleCRM', 2);
     req.onupgradeneeded = e => {
       const d = e.target.result;
       if (!d.objectStoreNames.contains('customers')) {
