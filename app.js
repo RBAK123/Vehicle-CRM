@@ -5,7 +5,7 @@ const STATUSES = ['未出牌','已上運輸署','待出保險','已出保險','�
 const STATUS_COLORS = { '未出牌':'red','已上運輸署':'orange','待出保險':'yellow','已出保險':'blue','待交車':'purple','已交車':'green' };
 const INSURANCE_COS = ['中銀保險','太平保險','安盛保險','保誠保險','恒生保險','友邦保險','蘇黎世保險','其他'];
 const NCD_OPTIONS = ['0%','10%','20%','30%','40%','50%','60%'];
-const GAC_PACKAGES = ['基本Package','進階Package','旗艦Package','其他'];
+
 
 // ─── INDEXEDDB ───────────────────────────────────────────────────────────────
 
@@ -335,10 +335,7 @@ function renderForm() {
   const pkgDetail = div('conditional-block');
   pkgDetail.id = 'pkg-detail';
   pkgDetail.style.display = yesno(c?.hasPackage) ? '' : 'none';
-  pkgDetail.append(
-    fieldEl('Package名稱', false, makeSelectEl('f-package', GAC_PACKAGES, c?.packageName, '選擇Package')),
-    makeToggle('f-pkgpaid', '是否已付Package款項？', c?.packagePaid)
-  );
+  pkgDetail.appendChild(makeToggle('f-pkgpaid', '是否已付Package款項？', c?.packagePaid));
   gacSec.appendChild(pkgDetail);
   setTimeout(() => {
     const chk = document.getElementById('f-haspackage');
@@ -437,7 +434,6 @@ function renderForm() {
       ncd: insType === '自來保險' ? (document.getElementById('f-ncd')?.value || '') : '',
       // GAC Package
       hasPackage: document.getElementById('f-haspackage')?.checked || false,
-      packageName: document.getElementById('f-package')?.value || '',
       packagePaid: document.getElementById('f-pkgpaid')?.checked || false,
       // Transport
       extraTransport: document.getElementById('f-extratd')?.checked || false,
@@ -586,9 +582,8 @@ function renderDetail() {
     pkgRow.append(pkLeft, yesnoBadge(c.hasPackage));
     pkgList.appendChild(pkgRow);
     if (yesno(c.hasPackage)) {
-      if (c.packageName) pkgList.appendChild(detailRow('🏷️', 'Package名稱', c.packageName));
       const paidRow = div('date-row');
-      const ppLeft = div('date-left'); ppLeft.append(span('date-icon','💰'), span('date-label','已付款'));
+      const ppLeft = div('date-left'); ppLeft.append(span('date-icon','💰'), span('date-label','已付Package款項'));
       paidRow.append(ppLeft, yesnoBadge(c.packagePaid));
       pkgList.appendChild(paidRow);
     }
